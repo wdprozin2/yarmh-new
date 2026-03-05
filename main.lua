@@ -1,50 +1,26 @@
--- Carrega a UI Rayfield primeiro
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
--- Cria a janela principal
 local Window = Rayfield:CreateWindow({
-   Name = "YARHM | Rayfield Edition",
-   LoadingTitle = "Carregando Scripts...",
-   LoadingSubtitle = "by wdprozin2",
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = "YARHM_Configs",
-      FileName = "MainConfig"
-   },
-   KeySystem = false
+   Name = "YARHM Rayfield Edition",
+   LoadingTitle = "Injetando Funções...",
+   ConfigurationSaving = { Enabled = true, FileName = "YARHM_Config" }
 })
 
--- Cria a aba principal
-local MainTab = Window:CreateTab("Início", "home")
+local TabMM2 = Window:CreateTab("Murder Mystery 2", "skull")
 
-MainTab:CreateSection("Carregamento Externo")
-
--- Botão que executa o seu script do GitHub
-MainTab:CreateButton({
-   Name = "Executar YARHM Custom",
+TabMM2:CreateButton({
+   Name = "Atirar no Murderer",
    Callback = function()
-       local success, err = pcall(function()
-           loadstring(game:HttpGet("https://raw.githubusercontent.com/wdprozin2/yarmh-new/main/main.lua"))()
-       end)
-       
-       if success then
-           Rayfield:Notify({Title = "Sucesso", Content = "Script carregado!", Duration = 2})
-       else
-           Rayfield:Notify({Title = "Erro", Content = "Falha ao baixar script: " .. tostring(err), Duration = 5})
+       -- APENAS A LÓGICA QUE ESTAVA NA ROUTINE DO MM2
+       local murderer = nil
+       for _, v in pairs(game.Players:GetPlayers()) do
+           if v.Character and v.Character:FindFirstChild("Knife") then murderer = v break end
+       end
+       if murderer and game.Players.LocalPlayer.Character:FindFirstChild("Gun") then
+           local pos = murderer.Character.HumanoidRootPart.Position + (murderer.Character.HumanoidRootPart.AssemblyLinearVelocity * 0.18)
+           game.Players.LocalPlayer.Character.Gun.KnifeLocal.CreateBeam.RemoteFunction:InvokeServer(1, pos, "AH2")
        end
    end,
 })
 
--- Exemplo de função universal rápida (pra não ficar vazio)
-local MiscTab = Window:CreateTab("Misc", "settings")
-MiscTab:CreateSlider({
-   Name = "Velocidade",
-   Range = {16, 500},
-   Increment = 1,
-   CurrentValue = 16,
-   Callback = function(Value)
-       game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
-   end,
-})
-
-Rayfield:LoadConfiguration()
+-- Continue adicionando as abas e funções conforme eu te mandei antes...
