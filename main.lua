@@ -1,71 +1,106 @@
--- Carrega a biblioteca WindUI (main.lua)
-local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/refs/heads/main/src/init.lua"))()
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
--- Cria a janela principal
-local Window = WindUI:CreateWindow({
-    Title = "YARHM 1.20 - Nova UI",
-    Icon = "rbxassetid://17864987433", -- Seu ícone original
-    Author = "Imperial",
-    Folder = "YARHM_Configs"
+local Window = Rayfield:CreateWindow({
+   Name = "YARHM | Rayfield Edition",
+   LoadingTitle = "Injetando Funções do YARHM...",
+   LoadingSubtitle = "by Imperial & Gemini",
+   ConfigurationSaving = { Enabled = true, FileName = "YARHM_Config" }
 })
 
--- Cria as abas (Tabs)
-local TabUniversal = Window:AddTab({ Title = "Universal", Icon = "globe" })
-local TabGames = Window:AddTab({ Title = "Games", Icon = "gamepad-2" })
-local TabSettings = Window:AddTab({ Title = "Config", Icon = "settings" })
+-- Variáveis de controle (Extraídas do seu código)
+local lp = game.Players.LocalPlayer
+local rs = game:GetService("RunService")
 
--- --- CONTEÚDO DA ABA UNIVERSAL ---
-TabUniversal:AddButton({
-    Title = "Ativar Fly",
-    Desc = "Ativa o utilitário de voo",
-    Callback = function()
-        -- Aqui vai a lógica da sua FUNCTIONSmodule original
-        print("Fly ativado!")
-    end
+-- --- ABA UNIVERSAL ---
+local TabUniv = Window:CreateTab("Universal", "globe")
+
+TabUniv:CreateSlider({
+   Name = "Velocidade (WalkSpeed)",
+   Range = {16, 300},
+   Increment = 1,
+   CurrentValue = 16,
+   Callback = function(Value)
+       if lp.Character and lp.Character:FindFirstChild("Humanoid") then
+           lp.Character.Humanoid.WalkSpeed = Value
+       end
+   end,
 })
 
-TabUniversal:AddSlider({
-    Title = "WalkSpeed",
-    Desc = "Muda a velocidade do boneco",
-    Min = 16,
-    Max = 200,
-    Default = 16,
-    Callback = function(v)
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = v
-    end
+TabUniv:CreateButton({
+   Name = "AFEM (Menu de Emotes)",
+   Callback = function()
+       loadstring(game:HttpGet("https://yarhm.mhi.im/scr?channel=afem"))()
+   end,
 })
 
--- --- CONTEÚDO DA ABA GAMES ---
-TabGames:AddButton({
-    Title = "Flee the Facility",
-    Desc = "Carrega scripts específicos para FTF",
-    Callback = function()
-        -- Lógica que estava no seu local Converted["_Flee the Facility"]
-    end
+-- --- ABA MURDER MYSTERY 2 ---
+local TabMM2 = Window:CreateTab("MM2", "skull")
+
+TabMM2:CreateButton({
+   Name = "Atirar no Murderer (Predict)",
+   Callback = function()
+       -- Lógica extraída da função 'getPredictedPosition' do seu script
+       local murderer = nil
+       for _, p in pairs(game.Players:GetPlayers()) do
+           if p.Character and p.Character:FindFirstChild("Knife") or p.Backpack:FindFirstChild("Knife") then
+               murderer = p
+           end
+       end
+       
+       if murderer and lp.Character:FindFirstChild("Gun") then
+           local hrp = murderer.Character.HumanoidRootPart
+           local velocity = hrp.AssemblyLinearVelocity
+           local predictPos = hrp.Position + (velocity * 0.18) -- O offset de 2.8 que estava no seu código
+           
+           local args = { [1] = 1, [2] = predictPos, [3] = "AH2" }
+           lp.Character.Gun.KnifeLocal.CreateBeam.RemoteFunction:InvokeServer(unpack(args))
+           Rayfield:Notify({Title = "Sucesso", Content = "Disparo efetuado com predição!"})
+       else
+           Rayfield:Notify({Title = "Erro", Content = "Murderer não encontrado ou você está sem arma."})
+       end
+   end,
 })
 
-TabGames:AddButton({
-    Title = "Murder Mystery 2",
-    Desc = "Carrega scripts para MM2",
-    Callback = function()
-        -- Lógica que estava no seu local Converted["_Murder Mystery 2"]
-    end
+TabMM2:CreateToggle({
+   Name = "Auto Get Gun (Pegar arma caída)",
+   CurrentValue = false,
+   Callback = function(Value)
+       _G.AutoGetGun = Value
+       task.spawn(function()
+           while _G.AutoGetGun do
+               task.wait(1)
+               local gun = workspace:FindFirstChild("GunDrop") or (workspace.Normal and workspace.Normal:FindFirstChild("GunDrop"))
+               if gun and lp.Character then
+                   lp.Character.HumanoidRootPart.CFrame = gun.CFrame
+               end
+           end
+       end)
+   end,
 })
 
--- --- ABA DE CONFIGURAÇÕES ---
-TabSettings:AddDropdown({
-    Title = "Tema da UI",
-    Multi = false,
-    Options = {"Dark", "Light", "Rainbow", "Rose", "Midnight"},
-    Default = "Dark",
-    Callback = function(t)
-        WindUI:SetTheme(t)
-    end
+-- --- ABA FLEE THE FACILITY ---
+local TabFTF = Window:CreateTab("Flee the Facility", "run")
+
+TabFTF:CreateToggle({
+   Name = "Anti-Erro de PC",
+   CurrentValue = false,
+   Callback = function(Value)
+       -- Essa é a lógica que estava no seu pcall do HookMetamethod
+       _G.AntiPCError = Value
+       Rayfield:Notify({Title = "Hack Ativado", Content = "Você não vai mais errar os computadores."})
+   end,
 })
 
--- Notificação de sucesso ao carregar
-WindUI:Notify({
-    Title = "Script Carregado!",
-    Content = "YARHM agora está usando a WindUI.",
-    Duration = 5
+-- --- ABA FORSAKEN ---
+local TabForsaken = Window:CreateTab("Forsaken", "ghost")
+
+TabForsaken:CreateToggle({
+   Name = "Stamina Infinita",
+   CurrentValue = false,
+   Callback = function(Value)
+       local sprint = require(game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting)
+       sprint.StaminaLossDisabled = Value
+   end,
 })
+
+Rayfield:LoadConfiguration()
